@@ -4,6 +4,7 @@ Check backup files using Ansible
 # Pre-requisite
   - Virtualbox
   - Vagrant
+  - [Google App Specific Password](https://security.google.com/settings/security/apppasswords) - You'll need to create a `Mail` app password.
   
 # Setup
   - Install `Virtualbox` and `Vagrant` in your local machine.
