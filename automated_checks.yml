@@ -1,15 +1,6 @@
 ---
 - hosts: archivers
   tasks:
-    - name: Check crontab for a user
-      command: /vagrant/automated_checks.py --cronfor ubuntu
-      register: cron_reg
-      become: yes
-    - set_fact: crons="{{ cron_reg.stdout | from_json }}"
-    - debug: var=crons
-    - local_action: 
-        copy content={{ crons | to_nice_json }} dest=/tmp/ansible/crons.json
-
     - name: Check daily backup
       command: /vagrant/automated_checks.py --backup daily
       register: daily_reg
