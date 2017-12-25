@@ -1,0 +1,167 @@
+---
+- hosts: archivers
+  tasks:
+    - name: Check crontab for a user
+      command: /vagrant/automated_checks.py --cronfor ubuntu
+      register: cron_reg
+      become: yes
+    - set_fact: crons="{{ cron_reg.stdout | from_json }}"
+    - debug: var=crons
+    - local_action: 
+        copy content={{ crons | to_nice_json }} dest=/tmp/ansible/crons.json
+
+    - name: Check daily backup
+      command: /vagrant/automated_checks.py --backup daily
+      register: daily_reg
+    - set_fact: daily="{{ daily_reg.stdout | from_json }}"
+    - debug: var=daily
+    - local_action: 
+        copy content={{ daily | to_nice_json }} dest=/tmp/ansible/daily.json
+      when: daily.codes.result == 1 or daily.databases.result == 1
+
+    - copy:
+        src: /tmp/ansible/daily.json
+        dest: /tmp/ansible/
+        owner: ubuntu
+        mode: 0755
+      when: daily.codes.result == 1 or daily.databases.result == 1
+
+    - stat: 
+        path: /tmp/ansible/daily.json
+      register: daily_file
+    - debug: var=daily_file
+
+    - name: Check weekly backup
+      command: /vagrant/automated_checks.py --backup weekly
+      register: weekly_reg
+    - set_fact: weekly="{{ weekly_reg.stdout | from_json }}"
+    - debug: var=weekly
+    - local_action: 
+        copy content={{ weekly | to_nice_json }} dest=/tmp/ansible/weekly.json
+      when: weekly.codes.result == 1 or weekly.databases.result == 1
+
+    - copy:
+        src: /tmp/ansible/weekly.json
+        dest: /tmp/ansible/
+        owner: ubuntu
+        mode: 0755
+      when: weekly.codes.result == 1 or weekly.databases.result == 1
+
+    - stat: 
+        path: /tmp/ansible/weekly.json
+      register: weekly_file
+    - debug: var=weekly_file
+
+    - name: Check monthly backup
+      command: /vagrant/automated_checks.py --backup monthly
+      register: monthly_reg
+    - set_fact: monthly="{{ monthly_reg.stdout | from_json }}"
+    - debug: var=monthly
+    - local_action: 
+        copy content={{ monthly | to_nice_json }} dest=/tmp/ansible/monthly.json
+      when: monthly.all.result == 1
+
+    - copy:
+        src: /tmp/ansible/monthly.json
+        dest: /tmp/ansible/
+        owner: ubuntu
+        mode: 0755
+      when: monthly.all.result == 1
+
+    - stat: 
+        path: /tmp/ansible/monthly.json
+      register: monthly_file
+    - debug: var=monthly_file
+
+    - name: Check yearly backup
+      command: /vagrant/automated_checks.py --backup yearly
+      register: yearly_reg
+    - set_fact: yearly="{{ yearly_reg.stdout | from_json }}"
+    - debug: var=yearly
+    - local_action: 
+        copy content={{ yearly | to_nice_json }} dest=/tmp/ansible/yearly.json
+      when: yearly.all.result == 1
+
+    - copy:
+        src: /tmp/ansible/yearly.json
+        dest: /tmp/ansible/
+        owner: ubuntu
+        mode: 0755
+      when: yearly.all.result == 1
+
+    - stat: 
+        path: /tmp/ansible/yearly.json
+      register: yearly_file
+    - debug: var=yearly_file
+
+    - mail:
+        host: smtp.gmail.com
+        port: 587
+        username: "{{ lookup('env', 'GOOGLE_MAIL_APP_USER') }}"
+        password: "{{ lookup('env', 'GOOGLE_MAIL_APP_PASS') }}"
+        to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
+        subject: Missing daily files for - {{ ansible_hostname }}
+        body: 'System {{ ansible_hostname }} has been successfully provisioned.'
+        attach: /tmp/ansible/daily.json
+      delegate_to: localhost
+      when: daily_file.stat.exists is defined and daily_file.stat.exists
+
+    - mail:
+        host: smtp.gmail.com
+        port: 587
+        username: "{{ lookup('env', 'GOOGLE_MAIL_APP_USER') }}"
+        password: "{{ lookup('env', 'GOOGLE_MAIL_APP_PASS') }}"
+        to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
+        subject: Missing weekly files for - {{ ansible_hostname }}
+        body: 'System {{ ansible_hostname }} has been successfully provisioned.'
+        attach: /tmp/ansible/weekly.json
+      delegate_to: localhost
+      when: weekly_file.stat.exists is defined and weekly_file.stat.exists
+
+    - mail:
+        host: smtp.gmail.com
+        port: 587
+        username: "{{ lookup('env', 'GOOGLE_MAIL_APP_USER') }}"
+        password: "{{ lookup('env', 'GOOGLE_MAIL_APP_PASS') }}"
+        to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
+        subject: Missing monthly files for - {{ ansible_hostname }}
+        body: 'System {{ ansible_hostname }} has been successfully provisioned.'
+        attach: /tmp/ansible/monthly.json
+      delegate_to: localhost
+      when: monthly_file.stat.exists is defined and monthly_file.stat.exists
+
+    - mail:
+        host: smtp.gmail.com
+        port: 587
+        username: "{{ lookup('env', 'GOOGLE_MAIL_APP_USER') }}"
+        password: "{{ lookup('env', 'GOOGLE_MAIL_APP_PASS') }}"
+        to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
+        subject: Missing yearly files for - {{ ansible_hostname }}
+        body: 'System {{ ansible_hostname }} has been successfully provisioned.'
+        attach: /tmp/ansible/yearly.json
+      delegate_to: localhost
+      when: yearly_file.stat.exists is defined and yearly_file.stat.exists        
+
+    - name: Delete daily file
+      file:
+        path: /tmp/ansible/daily.json
+        state: absent
+      when: daily_file.stat.exists is defined and daily_file.stat.exists
+
+    - name: Delete weekly file
+      file:
+        path: /tmp/ansible/weekly.json
+        state: absent
+      when: weekly_file.stat.exists is defined and weekly_file.stat.exists
+
+    - name: Delete monthly file
+      file:
+        path: /tmp/ansible/monthly.json
+        state: absent
+      when: monthly_file.stat.exists is defined and monthly_file.stat.exists
+
+    - name: Delete yearly file
+      file:
+        path: /tmp/ansible/yearly.json
+        state: absent
+      when: yearly_file.stat.exists is defined and yearly_file.stat.exists
