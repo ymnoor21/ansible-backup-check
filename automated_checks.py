@@ -4,7 +4,6 @@ import argparse
 import sys
 import os
 import subprocess
-from crontab import CronTab
 
 daily_code_path = '/tmp/daily/codes'
 daily_db_path = '/tmp/daily/databases'
@@ -254,40 +253,12 @@ class AutomatedTask:
             }
         }
 
-    def check_crontab(self, username):
-        message = ""
-        result = 0
-
-        if username:
-            try:
-                my_cron = CronTab(user=username)
-
-                cron_count = 0
-                for job in my_cron:
-                    message += str(job)
-                    cron_count += 1
-
-                if cron_count >= 1:
-                    result = 0
-                else:
-                    result = 1
-                    message = "No cron found for {}".format(username)
-            except IOError:
-                message = "Cannot retrieve crontab for {}".format(username)
-                result = 1
-        else:
-            message = "Username missing"
-            result = 1
-
-        print(json.dumps({"result": result, "message": message}))
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run automated scripts")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--backup',
                        help="Value = DAILY | WEEKLY | MONTHLY | YEARLY")
-    group.add_argument('--cronfor', help="Username = ubuntu | vagrant")
 
     args = vars(parser.parse_args())
 
@@ -295,5 +266,3 @@ if __name__ == "__main__":
 
     if args['backup']:
         at.check_backup(args['backup'])
-    elif args['cronfor']:
-        at.check_crontab(args['cronfor'])
