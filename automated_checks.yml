@@ -5,7 +5,6 @@
       command: /vagrant/automated_checks.py --backup daily
       register: daily_reg
     - set_fact: daily="{{ daily_reg.stdout | from_json }}"
-    - debug: var=daily
     - local_action: 
         copy content={{ daily | to_nice_json }} dest=/tmp/ansible/daily.json
     - copy:
@@ -13,6 +12,7 @@
         dest: /tmp/ansible/
         owner: ubuntu
         mode: 0755
+    - debug: var=daily
       when: daily.codes.result == 1 or daily.databases.result == 1
 
     - stat: 
@@ -24,7 +24,6 @@
       command: /vagrant/automated_checks.py --backup weekly
       register: weekly_reg
     - set_fact: weekly="{{ weekly_reg.stdout | from_json }}"
-    - debug: var=weekly
     - local_action: 
         copy content={{ weekly | to_nice_json }} dest=/tmp/ansible/weekly.json
     - copy:
@@ -32,6 +31,7 @@
         dest: /tmp/ansible/
         owner: ubuntu
         mode: 0755
+    - debug: var=weekly
       when: weekly.codes.result == 1 or weekly.databases.result == 1
     
     - stat: 
@@ -43,7 +43,6 @@
       command: /vagrant/automated_checks.py --backup monthly
       register: monthly_reg
     - set_fact: monthly="{{ monthly_reg.stdout | from_json }}"
-    - debug: var=monthly
     - local_action: 
         copy content={{ monthly | to_nice_json }} dest=/tmp/ansible/monthly.json
     - copy:
@@ -51,6 +50,7 @@
         dest: /tmp/ansible/
         owner: ubuntu
         mode: 0755
+    - debug: var=monthly
       when: monthly.all.result == 1
 
     - stat: 
@@ -62,7 +62,6 @@
       command: /vagrant/automated_checks.py --backup yearly
       register: yearly_reg
     - set_fact: yearly="{{ yearly_reg.stdout | from_json }}"
-    - debug: var=yearly
     - local_action: 
         copy content={{ yearly | to_nice_json }} dest=/tmp/ansible/yearly.json
     - copy:
@@ -70,6 +69,7 @@
         dest: /tmp/ansible/
         owner: ubuntu
         mode: 0755
+    - debug: var=yearly
       when: yearly.all.result == 1
 
     - stat: 
