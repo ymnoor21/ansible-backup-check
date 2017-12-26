@@ -8,8 +8,6 @@
     - debug: var=daily
     - local_action: 
         copy content={{ daily | to_nice_json }} dest=/tmp/ansible/daily.json
-      when: daily.codes.result == 1 or daily.databases.result == 1
-
     - copy:
         src: /tmp/ansible/daily.json
         dest: /tmp/ansible/
@@ -29,15 +27,13 @@
     - debug: var=weekly
     - local_action: 
         copy content={{ weekly | to_nice_json }} dest=/tmp/ansible/weekly.json
-      when: weekly.codes.result == 1 or weekly.databases.result == 1
-
     - copy:
         src: /tmp/ansible/weekly.json
         dest: /tmp/ansible/
         owner: ubuntu
         mode: 0755
       when: weekly.codes.result == 1 or weekly.databases.result == 1
-
+    
     - stat: 
         path: /tmp/ansible/weekly.json
       register: weekly_file
@@ -50,8 +46,6 @@
     - debug: var=monthly
     - local_action: 
         copy content={{ monthly | to_nice_json }} dest=/tmp/ansible/monthly.json
-      when: monthly.all.result == 1
-
     - copy:
         src: /tmp/ansible/monthly.json
         dest: /tmp/ansible/
@@ -71,8 +65,6 @@
     - debug: var=yearly
     - local_action: 
         copy content={{ yearly | to_nice_json }} dest=/tmp/ansible/yearly.json
-      when: yearly.all.result == 1
-
     - copy:
         src: /tmp/ansible/yearly.json
         dest: /tmp/ansible/
