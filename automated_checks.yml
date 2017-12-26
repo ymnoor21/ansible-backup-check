@@ -131,7 +131,7 @@
         body: 'Missing yearly files for - {{ ansible_hostname }}'
         attach: /tmp/ansible/yearly.json
       delegate_to: localhost
-      when: yearly_file.stat.exists is defined and yearly_file.stat.exists        
+      when: yearly_file.stat.exists is defined and yearly_file.stat.exists
 
     - name: Delete daily file
       file:
