@@ -92,7 +92,7 @@
         password: "{{ lookup('env', 'GOOGLE_MAIL_APP_PASS') }}"
         to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
         subject: Missing daily files for - {{ ansible_hostname }}
-        body: 'System {{ ansible_hostname }} has been successfully provisioned.'
+        body: 'Missing daily files for - {{ ansible_hostname }}'
         attach: /tmp/ansible/daily.json
       delegate_to: localhost
       when: daily_file.stat.exists is defined and daily_file.stat.exists
@@ -104,7 +104,7 @@
         password: "{{ lookup('env', 'GOOGLE_MAIL_APP_PASS') }}"
         to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
         subject: Missing weekly files for - {{ ansible_hostname }}
-        body: 'System {{ ansible_hostname }} has been successfully provisioned.'
+        body: 'Missing weekly files for - {{ ansible_hostname }}'
         attach: /tmp/ansible/weekly.json
       delegate_to: localhost
       when: weekly_file.stat.exists is defined and weekly_file.stat.exists
@@ -116,7 +116,7 @@
         password: "{{ lookup('env', 'GOOGLE_MAIL_APP_PASS') }}"
         to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
         subject: Missing monthly files for - {{ ansible_hostname }}
-        body: 'System {{ ansible_hostname }} has been successfully provisioned.'
+        body: 'Missing monthly files for - {{ ansible_hostname }}'
         attach: /tmp/ansible/monthly.json
       delegate_to: localhost
       when: monthly_file.stat.exists is defined and monthly_file.stat.exists
@@ -128,7 +128,7 @@
         password: "{{ lookup('env', 'GOOGLE_MAIL_APP_PASS') }}"
         to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
         subject: Missing yearly files for - {{ ansible_hostname }}
-        body: 'System {{ ansible_hostname }} has been successfully provisioned.'
+        body: 'Missing yearly files for - {{ ansible_hostname }}'
         attach: /tmp/ansible/yearly.json
       delegate_to: localhost
       when: yearly_file.stat.exists is defined and yearly_file.stat.exists        
