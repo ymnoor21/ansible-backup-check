@@ -1,22 +1,25 @@
 ---
 - hosts: archivers
   tasks:
+    - name: Creates directory
+      file: path=/home/ubuntu state=directory
+
     - name: Check daily backup
       command: /vagrant/automated_checks.py --backup daily
       register: daily_reg
     - set_fact: daily="{{ daily_reg.stdout | from_json }}"
     - local_action: 
-        copy content={{ daily | to_nice_json }} dest=/tmp/ansible/daily.json
+        copy content={{ daily | to_nice_json }} dest=/home/ubuntu/daily.json
     - copy:
-        src: /tmp/ansible/daily.json
-        dest: /tmp/ansible/
+        src: /home/ubuntu/daily.json
+        dest: /home/ubuntu/
         owner: ubuntu
         mode: 0755
     - debug: var=daily
       when: daily.codes.result == 1 or daily.databases.result == 1
 
     - stat: 
-        path: /tmp/ansible/daily.json
+        path: /home/ubuntu/daily.json
       register: daily_file
     - debug: var=daily_file
 
@@ -25,17 +28,17 @@
       register: weekly_reg
     - set_fact: weekly="{{ weekly_reg.stdout | from_json }}"
     - local_action: 
-        copy content={{ weekly | to_nice_json }} dest=/tmp/ansible/weekly.json
+        copy content={{ weekly | to_nice_json }} dest=/home/ubuntu/weekly.json
     - copy:
-        src: /tmp/ansible/weekly.json
-        dest: /tmp/ansible/
+        src: /home/ubuntu/weekly.json
+        dest: /home/ubuntu/
         owner: ubuntu
         mode: 0755
     - debug: var=weekly
       when: weekly.codes.result == 1 or weekly.databases.result == 1
     
     - stat: 
-        path: /tmp/ansible/weekly.json
+        path: /home/ubuntu/weekly.json
       register: weekly_file
     - debug: var=weekly_file
 
@@ -44,17 +47,17 @@
       register: monthly_reg
     - set_fact: monthly="{{ monthly_reg.stdout | from_json }}"
     - local_action: 
-        copy content={{ monthly | to_nice_json }} dest=/tmp/ansible/monthly.json
+        copy content={{ monthly | to_nice_json }} dest=/home/ubuntu/monthly.json
     - copy:
-        src: /tmp/ansible/monthly.json
-        dest: /tmp/ansible/
+        src: /home/ubuntu/monthly.json
+        dest: /home/ubuntu/
         owner: ubuntu
         mode: 0755
     - debug: var=monthly
       when: monthly.all.result == 1
 
     - stat: 
-        path: /tmp/ansible/monthly.json
+        path: /home/ubuntu/monthly.json
       register: monthly_file
     - debug: var=monthly_file
 
@@ -63,17 +66,17 @@
       register: yearly_reg
     - set_fact: yearly="{{ yearly_reg.stdout | from_json }}"
     - local_action: 
-        copy content={{ yearly | to_nice_json }} dest=/tmp/ansible/yearly.json
+        copy content={{ yearly | to_nice_json }} dest=/home/ubuntu/yearly.json
     - copy:
-        src: /tmp/ansible/yearly.json
-        dest: /tmp/ansible/
+        src: /home/ubuntu/yearly.json
+        dest: /home/ubuntu/
         owner: ubuntu
         mode: 0755
     - debug: var=yearly
       when: yearly.all.result == 1
 
     - stat: 
-        path: /tmp/ansible/yearly.json
+        path: /home/ubuntu/yearly.json
       register: yearly_file
     - debug: var=yearly_file
 
@@ -85,7 +88,7 @@
         to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
         subject: Missing daily files for - {{ ansible_hostname }}
         body: 'Missing daily files for - {{ ansible_hostname }}'
-        attach: /tmp/ansible/daily.json
+        attach: /home/ubuntu/daily.json
       delegate_to: localhost
       when: daily_file.stat.exists is defined and daily_file.stat.exists
 
@@ -97,7 +100,7 @@
         to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
         subject: Missing weekly files for - {{ ansible_hostname }}
         body: 'Missing weekly files for - {{ ansible_hostname }}'
-        attach: /tmp/ansible/weekly.json
+        attach: /home/ubuntu/weekly.json
       delegate_to: localhost
       when: weekly_file.stat.exists is defined and weekly_file.stat.exists
 
@@ -109,7 +112,7 @@
         to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
         subject: Missing monthly files for - {{ ansible_hostname }}
         body: 'Missing monthly files for - {{ ansible_hostname }}'
-        attach: /tmp/ansible/monthly.json
+        attach: /home/ubuntu/monthly.json
       delegate_to: localhost
       when: monthly_file.stat.exists is defined and monthly_file.stat.exists
 
@@ -121,30 +124,21 @@
         to: "{{ lookup('env', 'GOOGLE_MAIL_SEND_TO') }}"
         subject: Missing yearly files for - {{ ansible_hostname }}
         body: 'Missing yearly files for - {{ ansible_hostname }}'
-        attach: /tmp/ansible/yearly.json
+        attach: /home/ubuntu/yearly.json
       delegate_to: localhost
       when: yearly_file.stat.exists is defined and yearly_file.stat.exists
 
-    - name: Delete daily file
-      file:
-        path: /tmp/ansible/daily.json
-        state: absent
-      when: daily_file.stat.exists is defined and daily_file.stat.exists
+    - name: Colelct JSON files
+      find:
+        paths: /home/ubuntu
+        patterns: "*.json"
+      register: files_to_delete
+    - debug: var=files_to_delete
 
-    - name: Delete weekly file
+    - name: Remove all files
       file:
-        path: /tmp/ansible/weekly.json
+        path: "{{ item.path }}"
         state: absent
-      when: weekly_file.stat.exists is defined and weekly_file.stat.exists
-
-    - name: Delete monthly file
-      file:
-        path: /tmp/ansible/monthly.json
-        state: absent
-      when: monthly_file.stat.exists is defined and monthly_file.stat.exists
-
-    - name: Delete yearly file
-      file:
-        path: /tmp/ansible/yearly.json
-        state: absent
-      when: yearly_file.stat.exists is defined and yearly_file.stat.exists
+      with_items: "{{ files_to_delete.files }}"
+      register: deleted_files
+    - debug: var=deleted_files
