@@ -128,17 +128,29 @@
       delegate_to: localhost
       when: yearly_file.stat.exists is defined and yearly_file.stat.exists
 
-    - name: Colelct JSON files
+    - name: Colelct all JSON files
       find:
         paths: /home/ubuntu
         patterns: "*.json"
       register: files_to_delete
-    - debug: var=files_to_delete
 
-    - name: Remove all files
+    - name: Remove all JSON files
       file:
         path: "{{ item.path }}"
         state: absent
       with_items: "{{ files_to_delete.files }}"
-      register: deleted_files
-    - debug: var=deleted_files
+
+    - name: Colelct All local JSON files
+      find:
+        paths: /home/ubuntu
+        patterns: "*.json"
+      register: files_to_delete2
+      delegate_to: localhost
+
+    - name: Remove all local JSON files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ files_to_delete2.files }}"
+      delegate_to: localhost
+
