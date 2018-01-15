@@ -28,6 +28,6 @@ Check backup files using Ansible
     export SMTP_PASSWORD='google_mail_app_pass'
     export SMTP_SEND_TO='First Last <to_email@example.com>'
     ```
-  - Now run `source /etc/environment` command and maybe check one of the env variable by echoing using the: `echo $GOOGLE_MAIL_APP_USER` command. You should see a line printed with the value of `GOOGLE_MAIL_APP_USER` from `/etc/environment` file. i.e: `from_email@example.com`.
+  - Now run `source /etc/environment` command and maybe check one of the env variable by echoing using the: `echo $SMTP_SEND_FROM` command. You should see a line printed with the value of `SMTP_SEND_FROM` from `/etc/environment` file. i.e: `from_email@gmail.com`.
   - If everything looks good so far, then we are ready to run the ansible script. Issue this command in your `machine1` terminal: `ansible-playbook automated_checks.yml`.
-  - You will get an email in your `GOOGLE_MAIL_SEND_TO` account if you have backup files missing in your archiever servers.
+  - You will get an email in your `SMTP_SEND_TO` account if you have backup files missing in your archiever servers.
