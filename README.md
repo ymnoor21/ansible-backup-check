@@ -12,7 +12,7 @@ Check backup files using Ansible
   - Run `vagrant up`.
   - Once vagrant setup is complete, following assumptions will be made:
     - `machine1` will be the control machine.
-    - Backup checks will be performed in `machine2` and `machine2`.
+    - Backup checks will be performed in `machine2` and `machine3`.
   - Now we need to copy `machine1`'s pubic key to `machine2` and `machine3`, so that Ansible script can use ssh tunnel when required.
     - Run `vagrant ssh machine1` in your local machine's terminal. You should be in `machine1`'s terminal now.
     - Copy the content of `~/.ssh/id_rsa.pub`.
